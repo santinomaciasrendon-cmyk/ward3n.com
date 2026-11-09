@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>PORTAL WARD3N</title>
+    <style>
+        body {
+            background-color: #0d1117;
+            background-image: radial-gradient(#005f73 1px, transparent 1px), radial-gradient(#0a9396 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            color: #e0fbfc;
+            font-family: sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 { color: #00f5d4; text-shadow: 0 0 10px #00f5d4; }
+        .box {
+            background: rgba(10, 23, 42, 0.8);
+            border: 2px solid #00b4d8;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 600px;
+            box-shadow: 0 0 15px rgba(0, 180, 216, 0.5);
+        }
+        button {
+            background-color: #00f5d4;
+            color: #03045e;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #00b4d8; color: white; }
+        #gameCanvas { border: 4px solid #9d4edd; background-color: #10002b; display: block; margin: 10px auto; }
+        input, textarea { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #00b4d8; }
+        .nav-menu { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .portal-link { display: inline-block; border: 4px solid #9d4edd; border-radius: 5px; padding: 10px; background: #10002b; box-shadow: 0 0 15px #9d4edd; color: #fff; font-weight: bold; text-decoration: none; margin: 10px; }
+        .portal-link:hover { box-shadow: 0 0 25px #00f5d4; border-color: #00f5d4; }
+    </style>
+</head>
+<body>
+
+    <h1>BIENVENIDO AL PORTAL WARD3N</h1>
+    <p>Herobrine ha sido eliminado con éxito de este servidor</p>
+
+    <div class="nav-menu">
+        <a class="portal-link" href="https://minecraft.fandom.com/wiki/Nether_portal" target="_blank">PORTAL NETHER INFOPAGE</a>
+        <a class="portal-link" href="https://science.nasa.gov/neptune" target="_blank">PORTAL NEPTUNO</a>
+        <a class="portal-link" href="https://www.youtube.com/@EmilyCalandrelli" target="_blank">PORTAL EMILY WONDER LAB</a>
+    </div>
+
+    <div class="box">
+        <h3>Panel de Comandos (AI_Collaborator)</h3>
+        <p>Velocidad: <code>/effect give AI_Collaborator speed 99999 0 true</code></p>
+        <p>Invisibilidad: <code>/effect give AI_Collaborator invisibility 99999 0 true</code></p>
+    </div>
+
+    <div class="box">
+        <h3>El Escape del Creeper</h3>
+        <button id="startBtn" onclick="startGame()">START</button>
+        <canvas id="gameCanvas" width="400" height="300" style="display:none;"></canvas>
+        <p id="scoreText" style="display:none;">Diamantes: <span id="score">0</span></p>
+    </div>
+
+    <div class="box">
+        <h3>Habla con SPARK-BOT</h3>
+        <input type="text" id="iaInput" placeholder="Pregúntame sobre Minecraft, Neptuno o Ciencia...">
+        <button onclick="askSpark()">Preguntar</button>
+        <p id="iaResponse" style="font-style: italic; color: #00f5d4;"></p>
+    </div>
+
+    <div class="box">
+        <h3>Buzón de Sugerencias</h3>
+        <textarea id="sugText" placeholder="Escribe tus ideas para mejorar la página aquí..."></textarea><br>
+        <button onclick="sendEmail()">Enviar a mi Correo</button>
+    </div>
+
+    <script>
+        let canvas = document.getElementById("gameCanvas");
+        let ctx = canvas.getContext("2d");
+        let player = { x: 200, y: 150, size: 20, speed: 5 };
+        let creeper = { x: 50, y: 50, size: 20, speed: 2 };
+        let diamond = { x: 300, y: 200, size: 15 };
+        let score = 0;
+        let gameRunning = false;
+        let keys = {};
+
+        window.addEventListener("keydown", e => keys[e.key] = true);
+        window.addEventListener("keyup", e => keys[e.key] = false);
+
+        function startGame() {
+            document.getElementById("startBtn").style.display = "none";
+            canvas.style.display = "block";
+            document.getElementById("scoreText").style.display = "block";
+            gameRunning = true;
+            score = 0;
+            document.getElementById("score").innerText = score;
+            player.x = 200; player.y = 150;
+            creeper.x = 50; creeper.y = 50;
+            gameLoop();
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function update() {
+            if (keys["ArrowUp"] && player.y > 0) player.y -= player.speed;
+            if (keys["ArrowDown"] && player.y < canvas.height - player.size) player.y += player.speed;
+            if (keys["ArrowLeft"] && player.x > 0) player.x -= player.speed;
+            if (keys["ArrowRight"] && player.x < canvas.width - player.size) player.x += player.speed;
+
+            if (creeper.x < player.x) creeper.x += creeper.speed;
+            else creeper.x -= creeper.speed;
+            if (creeper.y < player.y) creeper.y += creeper.speed;
+            else creeper.y -= creeper.speed;
+
+            if (Math.abs(player.x - diamond.x) < 20 && Math.abs(player.y - diamond.y) < 20) {
+                score++;
+                document.getElementById("score").innerText = score;
+                diamond.x = Math.random() * (canvas.width - 20);
+                diamond.y = Math.random() * (canvas.height - 20);
+            }
+
+            if (Math.abs(player.x - creeper.x) < 20 && Math.abs(player.y - creeper.y) < 20) {
+                gameRunning = false;
+                alert("BOOM El Creeper exploto Puntuacion final: " + score);
+                canvas.style.display = "none";
+                document.getElementById("startBtn").style.display = "inline-block";
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#00b4d8";
+            ctx.fillRect(player.x, player.y, player.size, player.size);
+            ctx.fillStyle = "#38b000";
+            ctx.fillRect(creeper.x, creeper.y, creeper.size, creeper.size);
+            ctx.fillStyle = "#ffd166";
+            ctx.fillRect(diamond.x, diamond.y, diamond.size, diamond.size);
+        }
+
+        function askSpark() {
+            let input = document.getElementById("iaInput").value.toLowerCase();
+            let resp = document.getElementById("iaResponse");
+            if (input.includes("minecraft")) {
+                resp.innerText = "Spark dice: El Warden es ciego pero te escucha todo Usa lana para bloquear el sonido";
+            } else if (input.includes("neptuno")) {
+                resp.innerText = "Spark dice: En Neptuno llueven diamantes reales debido a la gran presion atmosferica";
+            } else if (input.includes("creeper")) {
+                resp.innerText = "Spark dice: El comando /gamerule mobGriefing false evita que destruya tus bloques";
+            } else {
+                resp.innerText = "Spark dice: Que gran pregunta cientifica Sigue explorando el universo";
+            }
+        }
+
+        function sendEmail() {
+            let text = document.getElementById("sugText").value;
+            window.location.href = "mailto:tu_correo@ejemplo.com?subject=Sugerencia Portal Ward3N&body=" + encodeURIComponent(text);
+        }
+    </script>
+</body>
+</html>
